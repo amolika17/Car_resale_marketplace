@@ -1,0 +1,166 @@
+{% extends "base.html" %} {% block title %}Home{% endblock %} {% block content
+%}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css"
+/>
+<div class="top-section">
+  <div
+    class="container h-full grid lg:grid-cols-2 grid-cols-1 lg:gap-24 gap-12 items-center justify-center lg:pt-24 pt-12 lg:pb-32 pb-16"
+  >
+    <div>
+      <h1 class="lg:text-start text-center">
+        Looking For a <span class="text-orange-600">New Ride?</span>
+      </h1>
+      <p class="lg:text-start text-center lg:pt-3 pt-1.5 text-slate-500">
+        Search from our vast fleet of vehicles
+      </p>
+
+      <div
+        class="autoComplete_wrapper !flex lg:justify-start justify-center lg:pt-6 pt-3"
+      >
+        <form action="/results" method="POST" id="myForm">
+          <input
+            id="autoComplete"
+            type="search"
+            dir="ltr"
+            spellcheck="false"
+            autocorrect="off"
+            autocomplete="off"
+            autocapitalize="off"
+            name="search-term"
+            value=""
+            class="!border-orange-600 !text-orange-600 !rounded-lg mx-auto"
+          />
+          <input type="hidden" name="type" value="search" />
+        </form>
+      </div>
+    </div>
+    <div class="flex items-center justify-center">
+      <img
+        src="../static/assets/landing.webp"
+        alt=""
+        class="w-full max-w-lg aspect-[26/23]"
+      />
+    </div>
+  </div>
+</div>
+<div class="section bg-orange-gradient lg:py-24 py-12">
+  <div class="container">
+    <h2>View by vehicle type</h2>
+    <form action="/results" method="POST" id="hiddenForm">
+      <input
+        type="hidden"
+        id="search-term-by-type"
+        name="search-term"
+        value=""
+      />
+      <input type="hidden" name="type" value="carType" />
+    </form>
+    <div
+      class="grid lg:grid-cols-4 md:grid-cols-3 grid-cols-2 lg:gap-6 gap-3 lg:pt-12 pt-6"
+    >
+      {% for car in carTypes %}
+      <a
+        class="shadow-md rounded-xl lg:p-4 p-2 hover:shadow-lg cursor-pointer bg-white group bg-{{car.key}} hover:scale-105 transition-transform"
+        href="javascript:void(0);"
+        onclick="submitForm('{{ car.value }}')"
+      >
+        <img
+          data-src="../static/assets/buy/{{car.key}}.webp"
+          alt=""
+          class="lazy-image w-full rounded-xl group-hover:scale-110 aspect-[49/37]"
+        />
+        {% if car.invertText == True %}
+        <p
+          class="text-center pt-2 group-hover:text-white font-semibold lg:text-lg text-sm"
+        >
+          {{car.value}}
+        </p>
+        {% endif %} {% if car.invertText == False %}
+        <p class="text-center pt-2 font-semibold">{{car.value}}</p>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<div class="lg:py-24 py-12">
+  <div class="grid lg:grid-cols-2 grid-cols-1 lg:gap-24 gap-12 container">
+    <div class="flex flex-col justify-center">
+      <div class="lg:text-start text-center">
+        <h2>
+          Are you considering
+          <span class="text-orange-600">selling your car?</span>
+        </h2>
+        <p class="lg:pt-3 pt-1.5">
+          Get an instant appraisal in as little as <b>2 minutes</b>
+        </p>
+      </div>
+      <div class="flex lg:justify-start justify-center">
+        <a href="/sell" class="lg:pt-6 pt-3">
+          <button
+            type="submit"
+            class="whitespace-nowrap border-none text-center py-2 lg:px-5 px-3 transition lg:text-lg text-base font-semibold rounded-lg bg-cyan-400 hover:bg-cyan-600 text-white"
+          >
+            Sell Car
+          </button>
+        </a>
+      </div>
+    </div>
+    <div class="flex justify-center">
+      <img
+        data-src="../static/assets/buy/sell-car.webp"
+        alt="gif"
+        class="lazy-image w-full max-w-xs aspect-[64/57]"
+      />
+    </div>
+  </div>
+</div>
+
+<script>
+  let flaskData = {{ allCars|tojson }};
+
+  const autoCompleteJS = new autoComplete({
+    selector: "#autoComplete",
+    placeHolder: "Search for Cars...",
+    searchEngine: "strict",
+    threshold: 1,
+    data: {
+      src: flaskData,
+      cache: true,
+    },
+    resultsList: {
+      element: (list, data) => {
+        if (!data.results.length) {
+          const message = document.createElement("div");
+          message.setAttribute("class", "no_result");
+          message.innerHTML = `<span>Found No Results for "${data.query}"</span>`;
+          list.prepend(message);
+        }
+      },
+      noResults: true,
+    },
+    resultItem: {
+      highlight: true,
+    },
+    events: {
+      input: {
+        selection: (event) => {
+          const selection = event.detail.selection.value;
+          autoCompleteJS.input.value = selection;
+          document.getElementById("myForm").submit();
+        },
+      },
+    },
+  });
+
+  function submitForm(type) {
+    console.log(type);
+    document.getElementById("search-term-by-type").value = type;
+    document.getElementById("hiddenForm").submit();
+  }
+</script>
+
+<style></style>
+{% endblock %}
